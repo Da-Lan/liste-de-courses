@@ -13,3 +13,4 @@ port = $PORT\n\
 " > ~/.streamlit/config.toml
 
 echo "pip install streamlit\n"
+echo "pip install sqlalchemy\n"
