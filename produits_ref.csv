@@ -1,8 +1,42 @@
 nom;magasin;categorie;prix
-Sauce tomate - Heinz;Monoprix;Rayon sec;3
-Quinoa;Monoprix;Rayon sec;2.9
-Nouilles sèches - Indomie;Monoprix;Rayon sec;0.85
-Echines;Monoprix;Rayon frais;2
-Poulet karage;Kanae;Rayon surgelé;8
-Natto;Kanae;Rayon surgelé;2.5
-Protège-lit;Ikea;Non alimentaire;30
+Sauce tomate - Heinz;1;Rayon sec;3
+Quinoa;1;Rayon sec;2.9
+Ramen sec - Indomie;1;Rayon sec;0.69
+Echines;1;Rayon frais;1.8
+Poulet karage;3;Rayon surgele;8
+Natto;3;Rayon surgele;4.13
+Protege-lit;6;Non alimentaire;30
+Galettes de legumes;1;Rayon surgele;3
+Pruneaux;1;Rayon sec;3.5
+Riz;3;Rayon sec;3
+Cafe;1;Rayon sec;5
+Poudre de canard;3;Rayon sec;1.5
+Sauce barbecue;1;Rayon sec;2.5
+Sopalin;1;Non alimentaire;2.5
+Courgettes;1;Rayon sec;2
+Oeufs de caille;1;Rayon frais;3
+Bananes;1;Rayon sec;1.5
+Yaourts;1;Rayon frais;3
+Pains de mie;2;Rayon sec;2
+Jus de fruit multifruit;2;Rayon sec;3
+Gouda;1;Rayon frais;1.99
+Dentifrice - Signal;1;Non alimentaire;3.5
+Dentifrice - Fluocaril;1;Non alimentaire;4.5
+Mouchoirs en boîte;1;Non alimentaire;1.5
+Mouchoirs de poche;1;Non alimentaire;2.5
+Proteges slip petits;1;Non alimentaire;1
+Proteges slip grands;1;Non alimentaire;1.5
+Demaquillant;1;Non alimentaire;2.5
+Deodorant;1;Non alimentaire;3
+Papier toilette;1;Non alimentaire;2
+Crousti Chicken;1;Rayon frais;5.79
+Spaetzle;1;Rayon frais;1.99
+Gnoccis à poêler;1;Rayon frais;1.79
+Liquide vaisselle;1;Non alimentaire;2.5
+Chocapic;1;Rayon sec;3.89
+Miel;1;Rayon sec;2.55
+Lait;1;Rayon sec;1.35
+Pâte à pizza;1;Rayon frais;1.25
+Lardons;1;Rayon frais;1.75
+Viande fraîche;1;Rayon frais;2
+Ramen – Nissin;3;Rayon sec;0.75

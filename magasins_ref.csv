@@ -1,0 +1,8 @@
+id;nom;ordre;Rayon sec;Rayon frais;Rayon surgele;Non alimentaire
+1;Monoprix;1;1;1;1;1
+2;Carrefour;2;1;1;1;0
+3;Kanae;3;1;1;1;0
+4;Pharmacie;4;0;0;0;1
+5;Bricorama;5;0;0;0;1
+6;Ikea;6;0;0;0;1
+7;Internet;7;0;0;0;1

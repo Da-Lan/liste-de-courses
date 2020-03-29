@@ -1,8 +1,8 @@
 nom;magasin;categorie;prix
-Sauce tomate - Heinz;Monoprix;Rayon sec;3.0
-Quinoa;Monoprix;Rayon sec;2.9
-Nouilles sèches - Indomie;Monoprix;Rayon sec;0.85
-Echines;Monoprix;Rayon frais;2.0
-Poulet karage;Kanae;Rayon surgelé;8.0
-Natto;Kanae;Rayon surgelé;2.5
-Protège-lit;Ikea;Non alimentaire;30.0
+Sauce tomate - Heinz;1;Rayon sec;3.0
+Quinoa;1;Rayon sec;2.9
+Ramen sec - Indomie;1;Rayon sec;0.69
+Echines;1;Rayon frais;2.0
+Poulet karage;3;Rayon surgele;8.0
+Natto;3;Rayon surgele;2.5
+Protege-lit;6;Non alimentaire;30.0
