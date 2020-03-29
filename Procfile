@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run ihm.py --server.port $PORT --browser.serverAddress liste-de-course.herokuapp.com
+web: sh setup.sh && streamlit run ihm.py prod --server.port $PORT --browser.serverAddress liste-de-course.herokuapp.com
