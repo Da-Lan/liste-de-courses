@@ -121,6 +121,7 @@ def ihm_builder(conn, engine) :
                     'prix':[prix]
                 } )
 
+                st.write("Ce qui va etre ajoute: " + str(produits_a_ajouter))
                 produits_a_ajouter.to_sql('produits_ref', engine, if_exists='append', index=False)
                 
                 st.write('Produit ajouté à la base de donnée !')
