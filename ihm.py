@@ -122,12 +122,16 @@ def ihm_builder(conn, engine) :
                 } )
 
                 produits_a_ajouter.to_sql('produits_ref', engine, if_exists='append', index=False)
-                
+                sql = "select * from public.produits_ref;"
+                produits_ref = pd.read_sql_query(sql, conn)
+
                 st.write('Produit ajouté à la base de donnée !')
 
-        st.subheader("Les 5 derniers produits ajoutés sont:")
-        st.write(produits_ref.tail(5))
+        st.subheader("Les 3 derniers produits ajoutés sont:")
+        st.write(produits_ref.tail(3))
 
+        st.subheader("Rechercher un produit existant:")
+        st.multiselect('', options=list(produits_ref['nom']))  
 
 
 
