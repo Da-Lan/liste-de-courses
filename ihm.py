@@ -12,6 +12,9 @@ import sys
 import psycopg2
 from sqlalchemy import create_engine
 from configparser import ConfigParser
+from datetime import date
+#import plotly.express as px
+import plotly.graph_objs as go
 
 
 ######### Parameters #########
@@ -153,15 +156,34 @@ def ihm_builder(conn, engine) :
 
 
     elif page == pages_ref[3]:
+        sql = "select * from public.produits_a_surveiller;"
+        produits_a_surveiller = pd.read_sql_query(sql, conn)
+        
+        if not produits_a_surveiller.empty:
+
+            fig = go.Figure(go.Bar(
+                x=produits_a_surveiller["date_fin"],
+                y=produits_a_surveiller["nom"],
+                orientation='h'))
+            fig.update_layout(bargap=0.7)
+            st.plotly_chart(fig)
+
         st.header("Ajouter un produit à surveiller")
-        st.markdown("|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|\
-        _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ")
         nom_produit = st.text_input('Nom du produit:')
         date_peremption = st.date_input("Date de péremption", value=None )
 
         if nom_produit:
             if st.button("Ajouter"):
                 st.write('Produit mis en surveillance !')
+
+                # insert new products to buy
+                produits_a_ajouter = pd.DataFrame( {
+                    'nom':[nom_produit],
+                    'date_debut':[date.today().strftime("%d/%m/%Y")],
+                    'date_fin':[date_peremption]
+                } )
+                produits_a_ajouter
+                produits_a_ajouter.to_sql('produits_a_surveiller', engine, if_exists='append', index=False)
         
         st.subheader("Enlever un produit en surveillance")
         #Pour le dev
