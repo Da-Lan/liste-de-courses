@@ -110,6 +110,7 @@ def ihm_builder(conn, engine) :
                     conn.commit()
                     cur.close()
 
+                    produits_a_acheter_maj = [x.replace("'", "''") if "'" in x else x for x in produits_a_acheter_maj]
                     # get new products's IDs in ref table
                     sql = "select * from public.produits_ref WHERE nom IN ('" + "', '".join(produits_a_acheter_maj) + "') ;"
                     produits_a_acheter_maj_details = pd.read_sql_query(sql, conn)
