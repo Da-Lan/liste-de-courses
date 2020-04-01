@@ -38,11 +38,27 @@ def ihm_builder(conn, engine) :
     ######### Parameters ########
     key_index = 1000
     rayons = ['Rayon sec', 'Rayon frais', 'Rayon surgele', 'Non alimentaire']
+    pages_ref = ['Listes de course', 'Ajouter un produit', 'Tendances',
+                'Gérer péremptions', 'Recettes de cuisine']
 
     ######### App #########
     st.sidebar.header("Liste de courses App")
-    pages = ['Listes de course', 'Ajouter un produit', 'Visualisations']
-    page = st.sidebar.radio("", options=pages)
+
+    pages = pages_ref[:3]
+    page = st.sidebar.empty()
+    page_peremption = st.sidebar.checkbox('Gérer maison')
+
+    if page_peremption:
+        pages = pages_ref[3:]
+
+    page = page.radio("", options=pages)
+    
+    hide_streamlit_style = """
+            <style>
+            footer {visibility: hidden;}
+            </style>
+            """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
     sql = "select * from public.produits_a_acheter;"
     produits_a_acheter = pd.read_sql_query(sql, conn)
@@ -53,9 +69,10 @@ def ihm_builder(conn, engine) :
     sql = "select * from public.magasins_ref;"
     magasins_ref = pd.read_sql_query(sql, conn)
 
-
+    #st.write(str(page) + ' is selected among ' + str(pages))
+    
     ######## Page 1 #######
-    if page == pages[0]:
+    if page == pages_ref[0]:
 
         # One section for each Magasin
         for index, m_ref in magasins_ref.iterrows():
@@ -103,8 +120,8 @@ def ihm_builder(conn, engine) :
                 st.write('Liste de course mise à jour !')
 
 
-    elif page == pages[1]:
-        st.header("Ajouter des produits à acheter")
+    elif page == pages_ref[1]:
+        st.header("Ajouter un produit à acheter")
         nom_produit = st.text_input('Nom du produit:')
         nom_magasin = st.selectbox('Magasin:', magasins_ref['nom'].unique())
         nom_rayon = st.selectbox('Rayon où trouver le produit:', produits_ref['categorie'].unique())
@@ -132,6 +149,30 @@ def ihm_builder(conn, engine) :
 
         st.subheader("Rechercher un produit existant:")
         st.multiselect('', options=list(produits_ref['nom']))  
+
+
+    elif page == pages_ref[3]:
+        st.header("Ajouter un produit à surveiller")
+        st.markdown("|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|  \n|\
+        _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ")
+        nom_produit = st.text_input('Nom du produit:')
+        date_peremption = st.date_input("Date de péremption", value=None )
+
+        if nom_produit:
+            if st.button("Ajouter"):
+                st.write('Produit mis en surveillance !')
+        
+        st.subheader("Enlever un produit en surveillance")
+        #Pour le dev
+        produits_enlevables = ['a', 'b', 'c', 'd','e','f']
+        produits_a_enlever = {}
+        #Pour le dev /
+        for p in produits_enlevables:
+            produits_a_enlever[p] = st.checkbox(p)
+
+        if produits_a_enlever :
+            if st.button("Enlever"):
+                st.write("Le produit n'est plus surveillé !")
 
 
 
