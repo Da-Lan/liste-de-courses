@@ -14,3 +14,4 @@ port = $PORT\n\
 
 echo "pip install streamlit\n"
 echo "pip install sqlalchemy\n"
+echo "pip install plotly\n"
