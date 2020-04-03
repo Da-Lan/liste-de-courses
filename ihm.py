@@ -15,6 +15,9 @@ from configparser import ConfigParser
 from datetime import date
 #import plotly.express as px
 import plotly.graph_objs as go
+import re
+import math
+
 
 
 ######### Parameters #########
@@ -160,41 +163,92 @@ def ihm_builder(conn, engine) :
         produits_a_surveiller = pd.read_sql_query(sql, conn)
         
         if not produits_a_surveiller.empty:
+            bin = [0, 0.5 , 1, 8, 15, 300]
+            labels = ["0 - Aujourd'hui !!", "1 - Demain !", "2 - Dans la semaine", "3 - Dans les deux semaines",
+                        "4 - Dans le mois"]
+            colors = {labels[0]: 'red',
+                        labels[1]: 'orange',
+                        labels[2]: 'green',
+                        labels[3]: 'blue',
+                        labels[4]: 'lightgrey'}
 
-            fig = go.Figure(go.Bar(
-                x=produits_a_surveiller["date_fin"],
-                y=produits_a_surveiller["nom"],
-                orientation='h'))
-            fig.update_layout(bargap=0.7)
+            produits_a_surveiller['temps_restant'] = produits_a_surveiller['date_fin'].apply(lambda x:
+                                        ( pd.to_datetime(x) - pd.to_datetime(date.today()) ).days)
+
+            produits_a_surveiller = produits_a_surveiller.sort_values('temps_restant', ascending=False)
+                    
+            produits_a_surveiller['temps_restant_label'] = list(
+                pd.cut(list(produits_a_surveiller.temps_restant), bins=bin, labels=labels, include_lowest=True)
+            )
+
+            st.header("Produit en surveillance")
+            bars = []
+            for label, label_df in produits_a_surveiller.groupby('temps_restant_label') :#.sum().reset_index().sort_values('temps_restant'):  #.apply(pd.DataFrame.sort_values, 'temps_restant'):
+                bars.append(go.Bar(x=label_df.date_fin,
+                                y=label_df.nom,
+                                name=label,
+                                marker={'color': colors[label]},
+                                orientation='h',
+                                opacity=0.7))
+            fig = go.FigureWidget(data=list(reversed(bars)))
+            fig.update_layout(bargap=0.4,
+                                xaxis=go.layout.XAxis( tickformat = '%d %B') )
             st.plotly_chart(fig)
 
         st.header("Ajouter un produit à surveiller")
         nom_produit = st.text_input('Nom du produit:')
         date_peremption = st.date_input("Date de péremption", value=None )
 
+
         if nom_produit:
             if st.button("Ajouter"):
-                st.write('Produit mis en surveillance !')
+               
+                #add suffix if products name already exists in BBD
+                if nom_produit in list(produits_a_surveiller['nom']):
+                    produits_a_surveiller['suffix'] = produits_a_surveiller[produits_a_surveiller['nom']\
+                            .str.startswith(nom_produit)]['nom']\
+                            .str.extract('(\d+)$')
 
-                # insert new products to buy
+                    produits_a_surveiller['suffix'] = produits_a_surveiller['suffix'].apply(lambda x: float(x))
+                    
+                    incr = produits_a_surveiller['suffix'].max()
+
+                    if math.isnan(incr):
+                        incr = 0
+                    else:
+                        incr = int(incr) + 1
+
+                    nom_produit = nom_produit + str(incr)
+
+                # insert new products to control
                 produits_a_ajouter = pd.DataFrame( {
                     'nom':[nom_produit],
                     'date_debut':[date.today().strftime("%d/%m/%Y")],
                     'date_fin':[date_peremption]
                 } )
-                produits_a_ajouter
+
                 produits_a_ajouter.to_sql('produits_a_surveiller', engine, if_exists='append', index=False)
-        
+                st.write('Produit mis en surveillance !')
+
         st.subheader("Enlever un produit en surveillance")
         #Pour le dev
-        produits_enlevables = ['a', 'b', 'c', 'd','e','f']
         produits_a_enlever = {}
         #Pour le dev /
-        for p in produits_enlevables:
-            produits_a_enlever[p] = st.checkbox(p)
+        for index, p in produits_a_surveiller.sort_values('date_fin').iterrows():
+            produits_a_enlever[p['nom']] = st.checkbox(p['nom'] + " (" + str(p['date_fin']) + ")")
 
-        if produits_a_enlever :
+        if True in produits_a_enlever.values() :
             if st.button("Enlever"):
+                produits_a_enlever_true = {key: value for key, value in produits_a_enlever.items() if value == True}
+                # delete products to stop to control them
+                produits_a_enlever_true = [x.replace("'", "''") if "'" in x else x for x in produits_a_enlever_true.keys()]
+                cur = conn.cursor()
+                sql = "DELETE FROM public.produits_a_surveiller WHERE produits_a_surveiller.nom IN ('" + "', '".join(produits_a_enlever_true) + "') ;"
+                print(sql)
+                cur.execute(sql)
+                conn.commit()
+                cur.close()
+
                 st.write("Le produit n'est plus surveillé !")
 
 
