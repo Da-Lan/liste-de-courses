@@ -181,6 +181,10 @@ def ihm_builder(conn, engine) :
                 pd.cut(list(produits_a_surveiller.temps_restant), bins=bin, labels=labels, include_lowest=True)
             )
 
+            import requests
+            headers = requests.utils.default_headers()
+            st.write(headers['User-Agent'])
+
             st.header("Produit en surveillance")
             height = int(len(produits_a_surveiller)*100/2.7)           
             bars = []
