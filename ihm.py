@@ -198,7 +198,7 @@ def ihm_builder(conn, engine) :
             fig = go.FigureWidget(data=list(reversed(bars)))
             fig.update_layout(bargap=0.2,
                                 height=height,
-                                width=400,
+                                width=500,
                                 showlegend=False,
                                 xaxis=go.layout.XAxis( tickformat = '%d %B'),
                                 xaxis_range = [(date.today() + timedelta(days=-1)) , (date.today() + timedelta(days=15))]
