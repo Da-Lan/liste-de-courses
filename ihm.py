@@ -189,9 +189,8 @@ def ihm_builder(conn, engine) :
                 str(label_df.temps_restant)
                 bars.append(go.Bar(x=label_df.date_fin,
                                 y=label_df.nom,
-                                name=label,
-                                text='  ' + label_df_str + ' j  ',
-                                
+                                #name=label,
+                                text='  ' + label_df_str + ' j  ',                                
                                 textposition='auto',
                                 marker={'color': colors[label]},
                                 orientation='h',
@@ -199,7 +198,8 @@ def ihm_builder(conn, engine) :
             fig = go.FigureWidget(data=list(reversed(bars)))
             fig.update_layout(bargap=0.2,
                                 height=height,
-                                width=500,
+                                width=400,
+                                showlegend=False,
                                 xaxis=go.layout.XAxis( tickformat = '%d %B'),
                                 xaxis_range = [(date.today() + timedelta(days=-1)) , (date.today() + timedelta(days=15))]
                                 )
