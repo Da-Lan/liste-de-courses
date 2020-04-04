@@ -182,7 +182,7 @@ def ihm_builder(conn, engine) :
             )
 
             st.header("Produit en surveillance")
-            height = int(len(produits_a_surveiller)*100/4.5)           
+            height = int(len(produits_a_surveiller)*100/4.5)  #4.5         
             bars = []
             for label, label_df in produits_a_surveiller.groupby('temps_restant_label') :#.sum().reset_index().sort_values('temps_restant'):  #.apply(pd.DataFrame.sort_values, 'temps_restant'):
                 label_df_str = label_df.temps_restant.apply(lambda x: str(x))
@@ -199,6 +199,7 @@ def ihm_builder(conn, engine) :
             fig = go.FigureWidget(data=list(reversed(bars)))
             fig.update_layout(bargap=0.2,
                                 height=height,
+                                width=500,
                                 xaxis=go.layout.XAxis( tickformat = '%d %B'),
                                 xaxis_range = [(date.today() + timedelta(days=-1)) , (date.today() + timedelta(days=15))]
                                 )
