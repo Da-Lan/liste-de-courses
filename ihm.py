@@ -181,12 +181,8 @@ def ihm_builder(conn, engine) :
                 pd.cut(list(produits_a_surveiller.temps_restant), bins=bin, labels=labels, include_lowest=True)
             )
 
-            import requests
-            headers = requests.utils.default_headers()
-            st.write(headers['User-Agent'])
-
             st.header("Produit en surveillance")
-            height = int(len(produits_a_surveiller)*100/2.7)           
+            height = int(len(produits_a_surveiller)*100/3.5)           
             bars = []
             for label, label_df in produits_a_surveiller.groupby('temps_restant_label') :#.sum().reset_index().sort_values('temps_restant'):  #.apply(pd.DataFrame.sort_values, 'temps_restant'):
                 label_df_str = label_df.temps_restant.apply(lambda x: str(x))
