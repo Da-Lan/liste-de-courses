@@ -44,20 +44,13 @@ def ihm_builder(conn, engine) :
     ######### Parameters ########
     key_index = 1000
     rayons = ['Rayon sec', 'Rayon frais', 'Rayon surgele', 'Non alimentaire']
-    pages_ref = ['Listes de course', 'Ajouter un produit', 'Tendances',
-                'Gérer péremptions', 'Recettes de cuisine']
+    pages_ref = ['Listes de course', 'Produits',
+                'Péremptions', 'Recettes de cuisine']
 
     ######### App #########
     st.sidebar.header("Liste de courses App")
 
-    pages = pages_ref[:3]
-    page = st.sidebar.empty()
-    page_peremption = st.sidebar.checkbox('Gérer maison')
-
-    if page_peremption:
-        pages = pages_ref[3:]
-
-    page = page.radio("", options=pages)
+    page = st.sidebar.radio("", options=pages_ref)
     
     hide_streamlit_style = """
             <style>
@@ -75,8 +68,7 @@ def ihm_builder(conn, engine) :
     sql = "select * from public.magasins_ref;"
     magasins_ref = pd.read_sql_query(sql, conn)
 
-    #st.write(str(page) + ' is selected among ' + str(pages))
-    
+
     ######## Page 1 #######
     if page == pages_ref[0]:
 
@@ -128,7 +120,7 @@ def ihm_builder(conn, engine) :
 
 
     elif page == pages_ref[1]:
-        st.header("Ajouter un produit à acheter")
+        st.title("Ajouter un produit à acheter")
         nom_produit = st.text_input('Nom du produit:')
         nom_magasin = st.selectbox('Magasin:', magasins_ref['nom'].unique())
         nom_rayon = st.selectbox('Rayon où trouver le produit:', produits_ref['categorie'].unique())
@@ -154,13 +146,98 @@ def ihm_builder(conn, engine) :
         st.subheader("Les 3 derniers produits ajoutés sont:")
         st.write(produits_ref.tail(3))
 
-        st.subheader("Rechercher un produit existant:")
-        st.multiselect('', options=list(produits_ref['nom']))  
+
+        st.header("Rechercher des produits existants")
+        produit_recherche = st.multiselect('', options=list(produits_ref['nom']))
+        produit_recherche = [x.replace("'", "''") if "'" in x else x for x in produit_recherche]
+        sql = "select * from public.produits_ref where nom IN ('" + "', '".join(produit_recherche) + "') ;"
+        produit_recherche_ref = pd.read_sql_query(sql, conn)
+        produit_recherche_ref
 
 
-    elif page == pages_ref[3]:
+        st.title("Modifier / supprimer un produit")
+        key_index = key_index + 10
+
+        produit_a_modif = st.multiselect('Nom du produit', options=list(produits_ref['nom']))
+
+        # select product
+
+        ### does not work properly: reset selectbox of product and the future ones each refresh page time
+        #produit_a_modif = st.empty()
+        #value = produit_a_modif.multiselect('Nom du produit', options=list(produits_ref['nom']))
+
+        #if len(value) > 0:
+        #    st.write("did it ?")
+        #    produit_a_modif.multiselect('Nom du produit', default=value[0], options=value)
+        #    st.write("did it!")
+
+        # get product's references from BDD
+
+        if produit_a_modif:
+            produit_a_modif = produit_a_modif[0]
+            produit_a_modif = produit_a_modif.replace("'", "''")
+            sql = "select * from public.produits_ref where nom = ('" + produit_a_modif + "') ;"
+            produit_a_modif_ref = pd.read_sql_query(sql, conn)
+
+            # print pre-filled widgets
+            nom_magasin_a_modif = st.selectbox('Magasin:',
+                                                magasins_ref['nom'].unique(),
+                                                index=int(produit_a_modif_ref['magasin'][0]) - 1,
+                                                key=key_index+1
+                                                )
+            nom_rayon_a_modif = st.selectbox('Rayon où trouver le produit:',        
+                                                produits_ref['categorie'].unique(),
+                                                index=rayons.index(list(produit_a_modif_ref['categorie'])[0]),
+                                                key=key_index+2
+                                                )
+            prix_a_modif = st.number_input('Prix:', value=float(produit_a_modif_ref['prix']), step=0.5, min_value=0.00, max_value=1000.00,
+                                                key=key_index+3)
+
+            #defining "product is modified" rules
+            rule_magasin_is_modified = list(magasins_ref[magasins_ref['nom'] == nom_magasin_a_modif]['id'])[0]\
+                                        != produit_a_modif_ref['magasin'][0]
+            rule_categorie_is_modified = nom_rayon_a_modif != list(produit_a_modif_ref['categorie'])[0]
+            rule_prix_is_modified = prix_a_modif != float(produit_a_modif_ref['prix'])
+
+            # Update product from referentiel
+            if st.button("Modifier le produit", key=key_index+4):
+                if (rule_magasin_is_modified or rule_categorie_is_modified or rule_prix_is_modified):
+                    # Create update query
+                    all_modified_variables = []
+                    if rule_magasin_is_modified: all_modified_variables.append("magasin = " + str(list(magasins_ref[magasins_ref['nom'] == nom_magasin_a_modif]['id'])[0]))
+                    if rule_categorie_is_modified: all_modified_variables.append("categorie = '" +nom_rayon_a_modif  + "'")
+                    if rule_prix_is_modified: all_modified_variables.append("prix = " + str(float(produit_a_modif_ref['prix'])))
+                    all_modified_variables
+
+                    # Execute update query
+                    cur = conn.cursor()
+                    sql = "UPDATE public.produits_ref SET " \
+                            + ", ".join(all_modified_variables) \
+                            + " WHERE produits_ref.nom = '" + produit_a_modif + "' ;"
+                    sql
+                    cur.execute(sql)
+                    conn.commit()
+                    cur.close()
+                    
+                    st.write("Produit mis à jour !")
+                else:
+                    st.write("Rien n'a changé !")
+
+            # delete products from referentiel
+            if st.button("Supprimer le produit", key=key_index+5):
+                cur = conn.cursor()
+                sql = "DELETE FROM public.produits_ref WHERE produits_ref.nom = '" + produit_a_modif + "' ;"
+                cur.execute(sql)
+                conn.commit()
+                cur.close()
+                st.write("Produit supprimé !")
+
+
+    elif page == pages_ref[2]:
         sql = "select * from public.produits_a_surveiller;"
         produits_a_surveiller = pd.read_sql_query(sql, conn)
+        st.title("Produit en surveillance")
+
         
         if not produits_a_surveiller.empty:
             bin = [0, 0.5 , 1, 8, 15, 300]
@@ -181,7 +258,6 @@ def ihm_builder(conn, engine) :
                 pd.cut(list(produits_a_surveiller.temps_restant), bins=bin, labels=labels, include_lowest=True)
             )
 
-            st.header("Produit en surveillance")
             height = int(len(produits_a_surveiller)*100/4.5)  #4.5         
             bars = []
             for label, label_df in produits_a_surveiller.groupby('temps_restant_label') :#.sum().reset_index().sort_values('temps_restant'):  #.apply(pd.DataFrame.sort_values, 'temps_restant'):
