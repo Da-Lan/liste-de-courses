@@ -147,12 +147,12 @@ def ihm_builder(conn, engine) :
         st.write(produits_ref.tail(3))
 
 
-        st.header("Rechercher des produits existants")
-        produit_recherche = st.multiselect('', options=list(produits_ref['nom']))
-        produit_recherche = [x.replace("'", "''") if "'" in x else x for x in produit_recherche]
-        sql = "select * from public.produits_ref where nom IN ('" + "', '".join(produit_recherche) + "') ;"
-        produit_recherche_ref = pd.read_sql_query(sql, conn)
-        produit_recherche_ref
+        #st.header("Rechercher des produits existants")
+        #produit_recherche = st.multiselect('', options=list(produits_ref['nom']))
+        #produit_recherche = [x.replace("'", "''") if "'" in x else x for x in produit_recherche]
+        #sql = "select * from public.produits_ref where nom IN ('" + "', '".join(produit_recherche) + "') ;"
+        #produit_recherche_ref = pd.read_sql_query(sql, conn)
+        #produit_recherche_ref
 
 
         st.title("Modifier / supprimer un produit")
@@ -206,7 +206,7 @@ def ihm_builder(conn, engine) :
                     all_modified_variables = []
                     if rule_magasin_is_modified: all_modified_variables.append("magasin = " + str(list(magasins_ref[magasins_ref['nom'] == nom_magasin_a_modif]['id'])[0]))
                     if rule_categorie_is_modified: all_modified_variables.append("categorie = '" +nom_rayon_a_modif  + "'")
-                    if rule_prix_is_modified: all_modified_variables.append("prix = " + str(float(produit_a_modif_ref['prix'])))
+                    if rule_prix_is_modified: all_modified_variables.append("prix = " + str(prix_a_modif))
                     all_modified_variables
 
                     # Execute update query
