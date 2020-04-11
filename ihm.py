@@ -234,8 +234,8 @@ def ihm_builder(conn, engine) :
 
 
     elif page == pages_ref[2]:
-        sql = "select * from public.produits_a_surveiller;"
-        #sql = "select * from public.produits_a_surveiller_beaucoup;"
+        #sql = "select * from public.produits_a_surveiller;"
+        sql = "select * from public.produits_a_surveiller_beaucoup;"
         produits_a_surveiller = pd.read_sql_query(sql, conn)
         st.title("Produit en surveillance")
 
@@ -259,7 +259,7 @@ def ihm_builder(conn, engine) :
                 pd.cut(list(produits_a_surveiller.temps_restant), bins=bin, labels=labels, include_lowest=True)
             )
 
-            height = int(math.exp(len(produits_a_surveiller)/21)*100+200)  #4.5         
+            height = int(math.exp(len(produits_a_surveiller)/21)*100+300)  #4.5         
             bars = []
             for label, label_df in produits_a_surveiller.groupby('temps_restant_label') :#.sum().reset_index().sort_values('temps_restant'):  #.apply(pd.DataFrame.sort_values, 'temps_restant'):
                 label_df_str = label_df.temps_restant.apply(lambda x: str(x))
