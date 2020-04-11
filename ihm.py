@@ -234,8 +234,8 @@ def ihm_builder(conn, engine) :
 
 
     elif page == pages_ref[2]:
-        #sql = "select * from public.produits_a_surveiller;"
-        sql = "select * from public.produits_a_surveiller_beaucoup;"
+        sql = "select * from public.produits_a_surveiller;"
+        #sql = "select * from public.produits_a_surveiller_beaucoup;"
         produits_a_surveiller = pd.read_sql_query(sql, conn)
         st.title("Produit en surveillance")
 
