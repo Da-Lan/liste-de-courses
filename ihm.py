@@ -17,12 +17,10 @@ from datetime import date, timedelta
 import plotly.graph_objs as go
 import re
 import math
+from dateutil.relativedelta import relativedelta
 
 
-
-######### Parameters #########
-#produits = pd.read_csv(r"produits_a_acheter.csv", sep=";", encoding='UTF-8')
-
+######### Fuctions #########
 
 def config(filename='config.ini', section='postgresql'):
     parser = ConfigParser()
@@ -45,7 +43,7 @@ def ihm_builder(conn, engine) :
     key_index = 1000
     rayons = ['Rayon sec', 'Rayon frais', 'Rayon surgele', 'Non alimentaire']
     pages_ref = ['Listes de course', 'Produits',
-                'Péremptions', 'Recettes de cuisine']
+                'Péremptions', 'Congélateur', 'Recettes de cuisine']
 
     ######### App #########
     st.sidebar.header("Liste de courses App")
@@ -147,14 +145,6 @@ def ihm_builder(conn, engine) :
         st.write(produits_ref.tail(3))
 
 
-        #st.header("Rechercher des produits existants")
-        #produit_recherche = st.multiselect('', options=list(produits_ref['nom']))
-        #produit_recherche = [x.replace("'", "''") if "'" in x else x for x in produit_recherche]
-        #sql = "select * from public.produits_ref where nom IN ('" + "', '".join(produit_recherche) + "') ;"
-        #produit_recherche_ref = pd.read_sql_query(sql, conn)
-        #produit_recherche_ref
-
-
         st.title("Modifier / supprimer un produit")
         key_index = key_index + 10
 
@@ -235,7 +225,6 @@ def ihm_builder(conn, engine) :
 
     elif page == pages_ref[2]:
         sql = "select * from public.produits_a_surveiller;"
-        #sql = "select * from public.produits_a_surveiller_beaucoup;"
         produits_a_surveiller = pd.read_sql_query(sql, conn)
         st.title("Produit en surveillance")
 
@@ -259,7 +248,7 @@ def ihm_builder(conn, engine) :
                 pd.cut(list(produits_a_surveiller.temps_restant), bins=bin, labels=labels, include_lowest=True)
             )
 
-            height = int(math.exp(len(produits_a_surveiller)/21)*100+300)  #4.5         
+            height = int(math.exp(len(produits_a_surveiller)/21)*100+300)     
             bars = []
             for label, label_df in produits_a_surveiller.groupby('temps_restant_label') :#.sum().reset_index().sort_values('temps_restant'):  #.apply(pd.DataFrame.sort_values, 'temps_restant'):
                 label_df_str = label_df.temps_restant.apply(lambda x: str(x))
@@ -335,6 +324,112 @@ def ihm_builder(conn, engine) :
                 cur.close()
 
                 st.write("Le produit n'est plus surveillé !")
+
+
+    elif page == pages_ref[3]:
+
+        sql = "select * from public.produits_au_congelateur;"
+        produits_au_congelateur = pd.read_sql_query(sql, conn)
+        st.title("Produit au congélateur")
+
+
+        if not produits_au_congelateur.empty:
+            bin = [0, 30 , 60, 180, 1000]
+            labels = ["0 - Bientôt !!", "1 - Dans un mois !", "2 - Dans les deux mois", "3 - Dans les longtemps"]
+            colors = {labels[0]: 'darkblue',
+                        labels[1]: 'blue',
+                        labels[2]: 'lightblue',
+                        labels[3]: 'white'}
+
+            produits_au_congelateur['temps_restant'] = produits_au_congelateur['date_fin'].apply(lambda x:
+                                        ( pd.to_datetime(x) - pd.to_datetime(date.today()) ).days)
+
+            produits_au_congelateur = produits_au_congelateur.sort_values('temps_restant', ascending=False)
+                    
+            produits_au_congelateur['temps_restant_label'] = list(
+                pd.cut(list(produits_au_congelateur.temps_restant), bins=bin, labels=labels, include_lowest=True)
+            )
+
+            height = int(math.exp(len(produits_au_congelateur)/21)*100+300)     
+            bars = []
+            for label, label_df in produits_au_congelateur.groupby('temps_restant_label') :#.sum().reset_index().sort_values('temps_restant'):  #.apply(pd.DataFrame.sort_values, 'temps_restant'):
+                label_df_str = label_df.temps_restant.apply(lambda x: str(x))
+                str(label_df.temps_restant)
+                bars.append(go.Bar(x=label_df.date_fin,
+                                y=label_df.nom,
+                                text='  ' + label_df_str + ' j  ',                                
+                                textposition='auto',
+                                marker={'color': colors[label]},
+                                orientation='h',
+                                opacity=0.7))
+            fig = go.FigureWidget(data=list(reversed(bars)))
+            fig.update_layout(bargap=0.2,
+                                height=height,
+                                width=460,
+                                showlegend=False,
+                                xaxis=go.layout.XAxis( tickformat = '%d %B'),
+                                xaxis_range = [(date.today() + timedelta(days=-1)) , (date.today() + relativedelta(months=+6))]
+                                )
+            st.plotly_chart(fig)
+
+
+        st.header("Ajouter un produit au congélateur")
+        nom_produit = st.text_input('Nom du produit:')
+        mois_conservation = st.number_input('Nombre de mois conseillé de conservation:', value=6, step=1, min_value=0, max_value=100)
+
+
+        if nom_produit:
+            if st.button("Ajouter"):
+               
+                #add suffix if products name already exists in BBD
+                if nom_produit in list(produits_au_congelateur['nom']):
+                    produits_au_congelateur['suffix'] = produits_au_congelateur[produits_au_congelateur['nom']\
+                            .str.startswith(nom_produit)]['nom']\
+                            .str.extract('(\d+)$')
+
+                    produits_au_congelateur['suffix'] = produits_au_congelateur['suffix'].apply(lambda x: float(x))
+                    
+                    incr = produits_au_congelateur['suffix'].max()
+
+                    if math.isnan(incr): incr = 0
+                    else: incr = int(incr) + 1
+
+                    nom_produit = nom_produit + str(incr)
+
+                # insert new products to control
+                produits_a_ajouter = pd.DataFrame( {
+                    'nom':[nom_produit],
+                    'date_debut':[date.today().strftime("%d/%m/%Y")],
+                    'date_fin':[(date.today() + relativedelta(months=+mois_conservation)).strftime("%d/%m/%Y")]
+                } )
+
+                produits_a_ajouter.to_sql('produits_au_congelateur', engine, if_exists='append', index=False)
+                st.write('Produit mis au congélateur !')
+
+
+        st.subheader("Enlever un produit du congélateur")
+        #Pour le dev
+        produits_a_enlever = {}
+        #Pour le dev /
+        for index, p in produits_au_congelateur.sort_values('date_fin').iterrows():
+            produits_a_enlever[p['nom']] = st.checkbox(p['nom'] + " (" + str(p['date_fin']) + ")")
+
+        if True in produits_a_enlever.values() :
+            if st.button("Enlever"):
+                produits_a_enlever_true = {key: value for key, value in produits_a_enlever.items() if value == True}
+                # delete products to stop to control them
+                produits_a_enlever_true = [x.replace("'", "''") if "'" in x else x for x in produits_a_enlever_true.keys()]
+                cur = conn.cursor()
+                sql = "DELETE FROM public.produits_au_congelateur WHERE produits_au_congelateur.nom IN ('" + "', '".join(produits_a_enlever_true) + "') ;"
+                print(sql)
+                cur.execute(sql)
+                conn.commit()
+                cur.close()
+
+                st.write("Le produit n'est plus au congélateur !")
+
+        
+
 
 
 
