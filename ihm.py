@@ -376,7 +376,10 @@ def ihm_builder(conn, engine) :
         st.header("Ajouter un produit au congélateur")
         nom_produit = st.text_input('Nom du produit:')
         mois_conservation = st.number_input('Nombre de mois conseillé de conservation:', value=6, step=1, min_value=0, max_value=100)
-
+        ### test
+        st.write("nombre choisi: " + str(mois_conservation))
+        mois_conservation
+        print("nombre choisi: " + str(mois_conservation))
 
         if nom_produit:
             if st.button("Ajouter"):
@@ -396,12 +399,23 @@ def ihm_builder(conn, engine) :
 
                     nom_produit = nom_produit + str(incr)
 
+                ### test
+                st.write("rappel du mois choisi : " + str(mois_conservation) )
+                st.write("Date au final: " + str((date.today() + relativedelta(months=+mois_conservation)).strftime("%d/%m/%Y")))
+                mois_conservation
+                print("resultat opération: " + str((date.today() + relativedelta(months=+mois_conservation)).strftime("%d/%m/%Y")))
+
                 # insert new products to control
                 produits_a_ajouter = pd.DataFrame( {
                     'nom':[nom_produit],
                     'date_debut':[date.today().strftime("%d/%m/%Y")],
                     'date_fin':[(date.today() + relativedelta(months=+mois_conservation)).strftime("%d/%m/%Y")]
                 } )
+
+                ### test
+                st.write("produits_a_ajouter : " + str(produits_a_ajouter) )
+                produits_a_ajouter
+                print("produits_a_ajouter: " + produits_a_ajouter)
 
                 produits_a_ajouter.to_sql('produits_au_congelateur', engine, if_exists='append', index=False)
                 st.write('Produit mis au congélateur !')
