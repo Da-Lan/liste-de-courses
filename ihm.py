@@ -332,10 +332,6 @@ def ihm_builder(conn, engine) :
         produits_au_congelateur = pd.read_sql_query(sql, conn)
         st.title("Produit au congélateur")
 
-        # force cast date format
-        produits_au_congelateur['date_fin'] = produits_au_congelateur['date_fin'].apply(lambda x:
-                                    pd.to_datetime(x).strftime("%Y-%m-%d") )
-
         if not produits_au_congelateur.empty:
             bin = [0, 30 , 60, 180, 1000]
             labels = ["0 - Bientôt !!", "1 - Dans un mois !", "2 - Dans les deux mois", "3 - Dans les longtemps"]
@@ -412,7 +408,7 @@ def ihm_builder(conn, engine) :
                 produits_a_ajouter = pd.DataFrame( {
                     'nom':[nom_produit],
                     'date_debut':[date.today().strftime("%d/%m/%Y")],
-                    'date_fin':[(date.today() + relativedelta(months=+mois_conservation)).strftime("%d/%m/%Y")]
+                    'date_fin':[(date.today() + relativedelta(months=+mois_conservation)).strftime("%Y/%m/%d")]
                 } )
 
                 ### test
