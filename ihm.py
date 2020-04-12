@@ -332,6 +332,9 @@ def ihm_builder(conn, engine) :
         produits_au_congelateur = pd.read_sql_query(sql, conn)
         st.title("Produit au congélateur")
 
+        # force cast date format
+        produits_au_congelateur['date_fin'] = produits_au_congelateur['date_fin'].apply(lambda x:
+                                    pd.to_datetime(x).strftime("%Y-%m-%d") )
 
         if not produits_au_congelateur.empty:
             bin = [0, 30 , 60, 180, 1000]
