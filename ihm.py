@@ -170,6 +170,7 @@ def ihm_builder(conn, engine) :
             produit_a_modif_ref = pd.read_sql_query(sql, conn)
 
             # print pre-filled widgets
+            nom_produit_a_modif = st.text_input('Nouveau nom', list(produit_a_modif_ref['nom'])[0])
             nom_magasin_a_modif = st.selectbox('Magasin:',
                                                 magasins_ref['nom'].unique(),
                                                 index=int(produit_a_modif_ref['magasin'][0]) - 1,
@@ -184,6 +185,7 @@ def ihm_builder(conn, engine) :
                                                 key=key_index+3)
 
             #defining "product is modified" rules
+            rule_product_name_is_modified = nom_produit_a_modif != list(produit_a_modif_ref['nom'])[0]
             rule_magasin_is_modified = list(magasins_ref[magasins_ref['nom'] == nom_magasin_a_modif]['id'])[0]\
                                         != produit_a_modif_ref['magasin'][0]
             rule_categorie_is_modified = nom_rayon_a_modif != list(produit_a_modif_ref['categorie'])[0]
@@ -191,20 +193,19 @@ def ihm_builder(conn, engine) :
 
             # Update product from referentiel
             if st.button("Modifier le produit", key=key_index+4):
-                if (rule_magasin_is_modified or rule_categorie_is_modified or rule_prix_is_modified):
+                if (rule_magasin_is_modified or rule_categorie_is_modified or rule_prix_is_modified or rule_product_name_is_modified):
                     # Create update query
                     all_modified_variables = []
+                    if rule_product_name_is_modified: all_modified_variables.append("nom = '" +nom_produit_a_modif  + "'")
                     if rule_magasin_is_modified: all_modified_variables.append("magasin = " + str(list(magasins_ref[magasins_ref['nom'] == nom_magasin_a_modif]['id'])[0]))
                     if rule_categorie_is_modified: all_modified_variables.append("categorie = '" +nom_rayon_a_modif  + "'")
                     if rule_prix_is_modified: all_modified_variables.append("prix = " + str(prix_a_modif))
-                    all_modified_variables
 
                     # Execute update query
                     cur = conn.cursor()
                     sql = "UPDATE public.produits_ref SET " \
                             + ", ".join(all_modified_variables) \
                             + " WHERE produits_ref.nom = '" + produit_a_modif + "' ;"
-                    sql
                     cur.execute(sql)
                     conn.commit()
                     cur.close()
