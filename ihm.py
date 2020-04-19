@@ -297,8 +297,8 @@ def ihm_builder(conn, engine) :
                 # insert new products to control
                 produits_a_ajouter = pd.DataFrame( {
                     'nom':[nom_produit],
-                    'date_debut':[date.today().strftime("%d/%m/%Y")],
-                    'date_fin':[date_peremption]
+                    'date_debut':[date.today().strftime("%Y-%m-%d")],
+                    'date_fin':[date_peremption.strftime("%Y-%m-%d")]
                 } )
 
                 produits_a_ajouter.to_sql('produits_a_surveiller', engine, if_exists='append', index=False)
@@ -397,8 +397,8 @@ def ihm_builder(conn, engine) :
                 # insert new products to control
                 produits_a_ajouter = pd.DataFrame( {
                     'nom':[nom_produit],
-                    'date_debut':[date.today().strftime("%d/%m/%Y")],
-                    'date_fin':[(date.today() + relativedelta(months=+mois_conservation)).strftime("%Y/%m/%d")]
+                    'date_debut':[date.today().strftime("%Y-%m-%d")],
+                    'date_fin':[(date.today() + relativedelta(months=+mois_conservation)).strftime("%Y-%m-%d")]
                 } )
 
                 produits_a_ajouter.to_sql('produits_au_congelateur', engine, if_exists='append', index=False)
