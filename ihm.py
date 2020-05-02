@@ -196,7 +196,7 @@ def ihm_builder(conn, engine) :
                 if (rule_magasin_is_modified or rule_categorie_is_modified or rule_prix_is_modified or rule_product_name_is_modified):
                     # Create update query
                     all_modified_variables = []
-                    if rule_product_name_is_modified: all_modified_variables.append("nom = '" +nom_produit_a_modif  + "'")
+                    if rule_product_name_is_modified: all_modified_variables.append("nom = '" +nom_produit_a_modif.replace("'", "''") + "'")
                     if rule_magasin_is_modified: all_modified_variables.append("magasin = " + str(list(magasins_ref[magasins_ref['nom'] == nom_magasin_a_modif]['id'])[0]))
                     if rule_categorie_is_modified: all_modified_variables.append("categorie = '" +nom_rayon_a_modif  + "'")
                     if rule_prix_is_modified: all_modified_variables.append("prix = " + str(prix_a_modif))
@@ -427,8 +427,61 @@ def ihm_builder(conn, engine) :
 
                 st.write("Le produit n'est plus au congélateur !")
 
-        
 
+    elif page == pages_ref[4]:
+
+        sql = "select * from public.recettes;"
+        recettes = pd.read_sql_query(sql, conn)
+        st.title("Recettes de cuisine")
+
+        recette_name_list = list(recettes['nom'].append(pd.Series(['Nouveau'])))
+        selected_recette_name = st.radio("", options=recette_name_list)
+
+        if selected_recette_name == recette_name_list[-1]:
+            nom_a_modif = st.text_input('Nom de la recette')
+            texte_a_modif = st.text_area('Recette')
+
+            if st.button("Ajouter", key=key_index+40):
+                if nom_a_modif and texte_a_modif:
+                    # insert new recette
+                    recette_a_ajouter = pd.DataFrame( {
+                        'nom':[nom_a_modif],
+                        'texte':[texte_a_modif]
+                    } )
+
+                    recette_a_ajouter.to_sql('recettes', engine, if_exists='append', index=False)
+                    st.write('Recette ajoutée !')
+                else:
+                    st.write("Rien n'a changé !")
+
+        else:
+            selected_recette = recettes[recettes['nom'] == selected_recette_name]
+            nom_a_modif = st.text_input('Nom de la recette:', list(selected_recette['nom'])[0])
+            texte_a_modif = st.text_area('', list(selected_recette['texte'])[0])
+
+            rule_nom_is_modified = nom_a_modif != selected_recette_name
+            rule_texte_is_modified = texte_a_modif != list(selected_recette['texte'])[0]
+
+            # Update recette
+            if st.button("Modifier", key=key_index+40):
+                if (rule_nom_is_modified or rule_texte_is_modified):
+                    # Create update query
+                    all_modified_variables = []
+                    if rule_nom_is_modified: all_modified_variables.append("nom = '" + nom_a_modif.replace("'", "''") + "'")
+                    if rule_texte_is_modified: all_modified_variables.append("texte = '" + texte_a_modif.replace("'", "''") + "'")
+
+                    # Execute update query
+                    cur = conn.cursor()
+                    sql = "UPDATE public.recettes SET " \
+                            + ", ".join(all_modified_variables) \
+                            + " WHERE recettes.nom = '" + selected_recette_name + "' ;"
+                    cur.execute(sql)
+                    conn.commit()
+                    cur.close()
+                    
+                    st.write("Recette mise à jour !")
+                else:
+                    st.write("Rien n'a changé !")
 
 
 
