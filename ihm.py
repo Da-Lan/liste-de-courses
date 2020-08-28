@@ -42,7 +42,7 @@ def ihm_builder(conn, engine) :
     ######### Parameters ########
     key_index = 1000
     rayons = ['Rayon sec', 'Rayon frais', 'Rayon surgele', 'Non alimentaire']
-    pages_ref = ['Listes de course', 'Produits',
+    pages_ref = ['Liste de courses', 'Produits',
                 'Péremptions', 'Congélateur', 'Recettes de cuisine']
 
     ######### App #########
@@ -114,7 +114,7 @@ def ihm_builder(conn, engine) :
                     # insert new products to buy
                     produits_a_acheter_maj_details.to_sql('produits_a_acheter', engine, if_exists='append', index=False)
                     
-                st.write('Liste de course mise à jour !')
+                st.write('Liste de courses mise à jour !')
 
 
     elif page == pages_ref[1]:
@@ -150,19 +150,7 @@ def ihm_builder(conn, engine) :
 
         produit_a_modif = st.multiselect('Nom du produit', options=list(produits_ref['nom']))
 
-        # select product
-
-        ### does not work properly: reset selectbox of product and the future ones each refresh page time
-        #produit_a_modif = st.empty()
-        #value = produit_a_modif.multiselect('Nom du produit', options=list(produits_ref['nom']))
-
-        #if len(value) > 0:
-        #    st.write("did it ?")
-        #    produit_a_modif.multiselect('Nom du produit', default=value[0], options=value)
-        #    st.write("did it!")
-
         # get product's references from BDD
-
         if produit_a_modif:
             produit_a_modif = produit_a_modif[0]
             produit_a_modif = produit_a_modif.replace("'", "''")
@@ -227,7 +215,7 @@ def ihm_builder(conn, engine) :
     elif page == pages_ref[2]:
         sql = "select * from public.produits_a_surveiller;"
         produits_a_surveiller = pd.read_sql_query(sql, conn)
-        st.title("Produit en surveillance")
+        st.title("Produits en surveillance")
 
         
         if not produits_a_surveiller.empty:
