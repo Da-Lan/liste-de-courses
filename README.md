@@ -1,4 +1,4 @@
-# liste-de-course
+# liste-de-courses
 
 Streamlit Web application in Python to help:
 - with managing your purchases
