@@ -6,3 +6,6 @@ Streamlit Web application in Python to help:
 - follow what's in your freezer
 
 Deloyable on heroku, compatible with postgreSQL database
+
+[Image screenshot1](Screenshot_1.png)
+[Image screenshot2](Screenshot_2.png)
