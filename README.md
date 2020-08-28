@@ -8,4 +8,4 @@ Streamlit Web application in Python to help:
 Deloyable on heroku, compatible with postgreSQL database
 
 [Image screenshot1](Screenshot_1.png)
-[Image screenshot2](Screenshot_2.png)
+![Image screenshot2](Screenshot_2.png)
